@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
-import copy
 
 def glcm(image, d=(1,0), bits=8):
     offset = {0: (1,0), 45: (1,1), 90: (0,1), 135: (-1, 1), 180: (-1, 0), 225: (-1,-1), 270: (0, -1), 315: (1,-1) }
@@ -39,6 +38,30 @@ def glcm_norm(image, d=(1,0), bits=8):
     
     return c
 
+def energy(c):
+    return np.sum(c**2)
+
+def contrast(c):
+    (width, height) = c.shape
+    aux = [(lin-col)**2*c[lin, col] for lin in range(height) for col in range(width)]
+
+    return np.sum(aux)
+
+def entropy(c):
+    (width, height) = c.shape
+    eps = 0.00001
+    aux = [c[lin, col]*np.log(c[lin,col]+eps) for lin in range(height) for col in range(width)]
+
+    return np.sum(aux)
+
+def homogeneity(c):
+    (width, height) = c.shape
+    aux = [c[lin, col]/(1+abs(lin-col)) for lin in range(height) for col in range(width)]
+
+    return np.sum(aux)
+
+def get_features(c):
+    return [energy(c), contrast(c), entropy(c), homogeneity(c)]
 
 
 img = Image.open('imgs/Lenna.png').convert('L')
@@ -59,6 +82,8 @@ plt.show()
 plt.imshow(c_norm, cmap='gray')
 plt.title('Normalized GLCM')
 plt.show()
+
+print(get_features(c_norm))
 
 # print(c[50:80,50:120])
 # print('---')
